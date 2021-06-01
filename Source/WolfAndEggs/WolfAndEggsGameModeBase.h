@@ -13,5 +13,7 @@ UCLASS()
 class WOLFANDEGGS_API AWolfAndEggsGameModeBase : public AGameModeBase
 {
 	GENERATED_BODY()
+
+	AWolfAndEggsGameModeBase();
 	
 };
