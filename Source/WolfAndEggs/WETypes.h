@@ -5,7 +5,7 @@
 
 
 UENUM(BlueprintType)
-enum class EWEBasketDirection : uint8
+enum class EWECornerDirection : uint8
 {
 	TopLeft           =0,
 	TopRight          =1,

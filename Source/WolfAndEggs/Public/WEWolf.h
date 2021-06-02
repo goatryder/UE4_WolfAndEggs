@@ -8,6 +8,8 @@
 
 #include "WEWolf.generated.h"
 
+DECLARE_MULTICAST_DELEGATE_TwoParams(FOnBasketDirectionChange, AWEWolf*, EWECornerDirection);
+
 class UPaperSpriteComponent;
 
 UCLASS()
@@ -44,20 +46,20 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Components")
 		UPaperSpriteComponent* SpriteBasketBottomRightComp;
 
-	EWEBasketDirection BasketDirection;
+	EWECornerDirection BasketDirection;
 
 public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	UFUNCTION(BlueprintCallable)
-		EWEBasketDirection GetBasketDirection() const { return BasketDirection; }
+		EWECornerDirection GetBasketDirection() const { return BasketDirection; }
 
 	/** Controlls Wolf and Basket Position */
-	void SetBasketDirection(EWEBasketDirection NewBasketDirection);
+	void SetBasketDirection(EWECornerDirection NewBasketDirection);
+
+	static FOnBasketDirectionChange NotifyOnBasketDirectionChange;
 
 	/** Partial Controll for Wolf and Basket Position */
 	void SetBasketPartialDirection(EWEDirection PartialDirection)
@@ -67,11 +69,11 @@ public:
 		case EWEDirection::Bottom:
 			switch (BasketDirection)
 			{
-			case EWEBasketDirection::TopLeft:
-				SetBasketDirection(EWEBasketDirection::BottomLeft);
+			case EWECornerDirection::TopLeft:
+				SetBasketDirection(EWECornerDirection::BottomLeft);
 				break;
-			case EWEBasketDirection::TopRight:
-				SetBasketDirection(EWEBasketDirection::BottomRight);
+			case EWECornerDirection::TopRight:
+				SetBasketDirection(EWECornerDirection::BottomRight);
 				break;
 			default:
 				break;
@@ -82,11 +84,11 @@ public:
 		case EWEDirection::Top:
 			switch (BasketDirection)
 			{
-			case EWEBasketDirection::BottomLeft:
-				SetBasketDirection(EWEBasketDirection::TopLeft);
+			case EWECornerDirection::BottomLeft:
+				SetBasketDirection(EWECornerDirection::TopLeft);
 				break;
-			case EWEBasketDirection::BottomRight:
-				SetBasketDirection(EWEBasketDirection::TopRight);
+			case EWECornerDirection::BottomRight:
+				SetBasketDirection(EWECornerDirection::TopRight);
 				break;
 			default:
 				break;
@@ -97,11 +99,11 @@ public:
 		case EWEDirection::Left:
 			switch (BasketDirection)
 			{
-			case EWEBasketDirection::BottomRight:
-				SetBasketDirection(EWEBasketDirection::BottomLeft);
+			case EWECornerDirection::BottomRight:
+				SetBasketDirection(EWECornerDirection::BottomLeft);
 				break;
-			case EWEBasketDirection::TopRight:
-				SetBasketDirection(EWEBasketDirection::TopLeft);
+			case EWECornerDirection::TopRight:
+				SetBasketDirection(EWECornerDirection::TopLeft);
 				break;
 			default:
 				break;
@@ -112,11 +114,11 @@ public:
 		case EWEDirection::Right:
 			switch (BasketDirection)
 			{
-			case EWEBasketDirection::BottomLeft:
-				SetBasketDirection(EWEBasketDirection::BottomRight);
+			case EWECornerDirection::BottomLeft:
+				SetBasketDirection(EWECornerDirection::BottomRight);
 				break;
-			case EWEBasketDirection::TopLeft:
-				SetBasketDirection(EWEBasketDirection::TopRight);
+			case EWECornerDirection::TopLeft:
+				SetBasketDirection(EWECornerDirection::TopRight);
 				break;
 			default:
 				break;

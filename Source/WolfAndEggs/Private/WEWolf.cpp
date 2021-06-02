@@ -5,11 +5,14 @@
 #include "PaperSpriteComponent.h"
 #include "Components/SphereComponent.h"
 #include "Components/SceneComponent.h"
+#include "../WolfAndEggs.h"
+
+FOnBasketDirectionChange AWEWolf::NotifyOnBasketDirectionChange;
+
 // Sets default values
 AWEWolf::AWEWolf()
 {
- 	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
 
 	SceneComp = CreateDefaultSubobject<USceneComponent>(TEXT("SceneRoot"));
 	RootComponent = SceneComp;
@@ -33,7 +36,8 @@ AWEWolf::AWEWolf()
 	SpriteBasketBottomRightComp->SetupAttachment(RootComponent);
 
 	// default basket direction
-	SetBasketDirection(EWEBasketDirection::TopRight);
+	BasketDirection = EWECornerDirection::BottomRight;
+	SetBasketDirection(static_cast<EWECornerDirection>(WE_DEFAULT_BASKET_DIRECTION));
 }
 
 // Called when the game starts or when spawned
@@ -43,21 +47,13 @@ void AWEWolf::BeginPlay()
 	
 }
 
-// Called every frame
-void AWEWolf::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
-}
-
 // Called to bind functionality to input
 void AWEWolf::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
-
 }
 
-void AWEWolf::SetBasketDirection(EWEBasketDirection NewBasketDirection)
+void AWEWolf::SetBasketDirection(EWECornerDirection NewBasketDirection)
 {
 	if (BasketDirection == NewBasketDirection)
 	{
@@ -76,7 +72,7 @@ void AWEWolf::SetBasketDirection(EWEBasketDirection NewBasketDirection)
 
 	switch (NewBasketDirection)
 	{
-	case EWEBasketDirection::BottomRight:
+	case EWECornerDirection::BottomRight:
 		SpriteWolfFaceLeftComp->SetVisibility(false);
 		SpriteWolfFaceRightComp->SetVisibility(true);
 
@@ -86,7 +82,7 @@ void AWEWolf::SetBasketDirection(EWEBasketDirection NewBasketDirection)
 		SpriteBasketBottomRightComp->SetVisibility(true);
 		break;
 	
-	case EWEBasketDirection::BottomLeft:
+	case EWECornerDirection::BottomLeft:
 		SpriteWolfFaceLeftComp->SetVisibility(true);
 		SpriteWolfFaceRightComp->SetVisibility(false);
 
@@ -96,7 +92,7 @@ void AWEWolf::SetBasketDirection(EWEBasketDirection NewBasketDirection)
 		SpriteBasketBottomRightComp->SetVisibility(false);
 		break;
 	
-	case EWEBasketDirection::TopLeft:
+	case EWECornerDirection::TopLeft:
 		SpriteWolfFaceLeftComp->SetVisibility(true);
 		SpriteWolfFaceRightComp->SetVisibility(false);
 
@@ -106,7 +102,7 @@ void AWEWolf::SetBasketDirection(EWEBasketDirection NewBasketDirection)
 		SpriteBasketBottomRightComp->SetVisibility(false);
 		break;
 	
-	case EWEBasketDirection::TopRight:
+	case EWECornerDirection::TopRight:
 		SpriteWolfFaceLeftComp->SetVisibility(false);
 		SpriteWolfFaceRightComp->SetVisibility(true);
 
@@ -121,4 +117,6 @@ void AWEWolf::SetBasketDirection(EWEBasketDirection NewBasketDirection)
 	}
 
 	BasketDirection = NewBasketDirection;
+
+	NotifyOnBasketDirectionChange.Broadcast(this, BasketDirection);
 }
