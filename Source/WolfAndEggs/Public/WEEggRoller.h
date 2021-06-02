@@ -5,18 +5,20 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "../WETypes.h"
-#include "EggRoller.generated.h"
+#include "WEEggRoller.generated.h"
 
-DECLARE_MULTICAST_DELEGATE_ThreeParams(FOnEggOut, AEggRoller*, EWECornerDirection, bool);
+DECLARE_MULTICAST_DELEGATE_ThreeParams(FOnEggOut, AWEEggRoller*, EWECornerDirection, bool);
 
 UCLASS()
-class WOLFANDEGGS_API AEggRoller : public AActor
+class WOLFANDEGGS_API AWEEggRoller : public AActor
 {
 	GENERATED_BODY()
 	
 public:	
 	// Sets default values for this actor's properties
-	AEggRoller();
+	AWEEggRoller();
+
+	virtual void BeginDestroy() override;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 		class USceneComponent* SceneComp;
@@ -65,10 +67,12 @@ protected:
 	UFUNCTION()
 		void PushEgg();
 
-	/** Check if we can catch egg, if so -> notify EggOut with bCatched = true 
-	 
-	 */
-	void TryToCatchEgg();
+	/** Check if we can catch egg, if so -> notify EggOut with bCatched = true.
+	  * If Allow Drop, When egg catch fail egg will drop
+	  * case when TryToCatchEgg() run on BasketDirectionChange bAllowDrop should be false;
+	  * case when TryToCatchEgg() run before ShiftEggs() bAllowDrop should be true
+	  */
+	void TryToCatchEgg(bool bAllowEggDrop);
 
 	UPROPERTY(EditDefaultsOnly, Category = "EggRoller")
 		float PushEggTime;
@@ -88,5 +92,8 @@ public:
 	UFUNCTION()
 		void OnWolfBasketDirectionChange(class AWEWolf* Wolf, EWECornerDirection BasketDirection);
 
+private:
+
+	class FDelegateHandle DelegateHandle_BasketDirectionChange;
 
 };

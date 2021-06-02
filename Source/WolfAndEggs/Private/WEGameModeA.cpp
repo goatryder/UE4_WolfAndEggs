@@ -1,13 +1,13 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "WolfAndEggsGameModeBase.h"
+#include "WEGameModeA.h"
 
-#include "Public/WEWolf.h"
-#include "Public/WEWolfPlayerController.h"
-#include "Public/WolfAndEggsHUD.h"
+#include "WEWolf.h"
+#include "WEWolfPlayerController.h"
+#include "WolfAndEggsHUD.h"
 
-AWolfAndEggsGameModeBase::AWolfAndEggsGameModeBase()
+AWEGameModeA::AWEGameModeA()
 {
 	// PrimaryActorTick.bCanEverTick = true;
 

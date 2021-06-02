@@ -1,19 +1,21 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "EggRoller.h"
+#include "WEEggRoller.h"
+
 #include "Components/SceneComponent.h"
 #include "PaperSpriteComponent.h"
 #include "PaperSprite.h"
 
+#include "WEWolf.h"
 #include "../WolfAndEggs.h"
 
-FOnEggOut AEggRoller::NotifyOnEggOut;
+FOnEggOut AWEEggRoller::NotifyOnEggOut;
 
-EWECornerDirection AEggRoller::BasketDirecitonCurrent = static_cast<EWECornerDirection>(WE_DEFAULT_BASKET_DIRECTION);
+EWECornerDirection AWEEggRoller::BasketDirecitonCurrent = static_cast<EWECornerDirection>(WE_DEFAULT_BASKET_DIRECTION);
 
 // Sets default values
-AEggRoller::AEggRoller()
+AWEEggRoller::AWEEggRoller()
 {
 	PrimaryActorTick.bCanEverTick = false;
 
@@ -47,9 +49,12 @@ AEggRoller::AEggRoller()
 }
 
 // Called when the game starts or when spawned
-void AEggRoller::BeginPlay()
+void AWEEggRoller::BeginPlay()
 {
 	Super::BeginPlay();
+
+	// subscribe to basket change direction
+	DelegateHandle_BasketDirectionChange = AWEWolf::NotifyOnBasketDirectionChange.AddUObject(this, &AWEEggRoller::OnWolfBasketDirectionChange);
 
 	for (auto& Sprite : SpriteComponents)
 	{
@@ -63,12 +68,23 @@ void AEggRoller::BeginPlay()
 	}
 }
 
-void AEggRoller::Activate(bool bActivate)
+void AWEEggRoller::BeginDestroy()
+{
+	Super::BeginDestroy();
+
+	// unsubscribe from basket change direction
+	if (DelegateHandle_BasketDirectionChange.IsValid())
+	{
+		AWEWolf::NotifyOnBasketDirectionChange.Remove(DelegateHandle_BasketDirectionChange);
+	}
+}
+
+void AWEEggRoller::Activate(bool bActivate)
 {
 	if (bActivate)
 	{
 		GetWorldTimerManager().ClearTimer(TimerHandle_EggPush);
-		GetWorldTimerManager().SetTimer(TimerHandle_EggPush, this, &AEggRoller::PushEgg, PushEggTime, false);
+		GetWorldTimerManager().SetTimer(TimerHandle_EggPush, this, &AWEEggRoller::PushEgg, PushEggTime, false);
 	}
 	else
 	{
@@ -78,7 +94,7 @@ void AEggRoller::Activate(bool bActivate)
 	bIsActive = bActivate;
 }
 
-void AEggRoller::SetPushEggTime(float NewTime, bool bImmediately)
+void AWEEggRoller::SetPushEggTime(float NewTime, bool bImmediately)
 {
 	PushEggTime = NewTime;
 
@@ -89,7 +105,7 @@ void AEggRoller::SetPushEggTime(float NewTime, bool bImmediately)
 	}
 }
 
-void AEggRoller::AddEgg()
+void AWEEggRoller::AddEgg()
 {
 	UPaperSpriteComponent* FirstEggSlot = SpriteComponents[0];
 	ensure(FirstEggSlot);
@@ -102,7 +118,7 @@ void AEggRoller::AddEgg()
 	FirstEggSlot->SetVisibility(true); // add egg to first slot
 }
 
-void AEggRoller::ShiftEggs()
+void AWEEggRoller::ShiftEggs()
 {
 	for (int32 i = SpriteComponents.Num() - 1; i != 0; --i)
 	{
@@ -112,10 +128,11 @@ void AEggRoller::ShiftEggs()
 		ensure(PrevEggSlot);
 
 		NextEggSlot->SetVisibility(PrevEggSlot->IsVisible());
+		PrevEggSlot->SetVisibility(false);
 	}
 }
 
-void AEggRoller::TryToCatchEgg()
+void AWEEggRoller::TryToCatchEgg(bool bAllowEggDrop)
 {
 	UPaperSpriteComponent* LastEggSlot = SpriteComponents[SpriteComponents.Num() - 1];
 	ensure(LastEggSlot);
@@ -134,16 +151,19 @@ void AEggRoller::TryToCatchEgg()
 				GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, Msg);
 			}
 		}
-		else                                                            // let egg fall 
+		else                                                            // let egg fall if allowed
 		{
-			NotifyOnEggOut.Broadcast(this, EggRollerPosition, false);
-
-			// Debug
-			if (GEngine)
+			if (bAllowEggDrop)
 			{
-				FString Msg = FString::Printf(TEXT("[EggRoller] Egg falls! roller id: %d"), 
-					static_cast<uint8>(EggRollerPosition));
-				GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, Msg);
+				NotifyOnEggOut.Broadcast(this, EggRollerPosition, false);
+
+				// Debug
+				if (GEngine)
+				{
+					FString Msg = FString::Printf(TEXT("[EggRoller] Egg falls! roller id: %d"),
+						static_cast<uint8>(EggRollerPosition));
+					GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, Msg);
+				}
 			}
 		}
 
@@ -151,9 +171,9 @@ void AEggRoller::TryToCatchEgg()
 	}
 }
 
-void AEggRoller::PushEgg()
+void AWEEggRoller::PushEgg()
 {
-	TryToCatchEgg();
+	TryToCatchEgg(true);
 	ShiftEggs();
 
 	// continue egg push loop
@@ -163,9 +183,16 @@ void AEggRoller::PushEgg()
 	}
 }
 
-void AEggRoller::OnWolfBasketDirectionChange(AWEWolf* Wolf, EWECornerDirection BasketDirection)
+void AWEEggRoller::OnWolfBasketDirectionChange(AWEWolf* Wolf, EWECornerDirection BasketDirection)
 {
+	/*// Debug
+	if (GEngine)
+	{
+		FString Msg = FString::Printf(TEXT("[EggRoller] OnBasketDirectionChange NewDirection: %d"), static_cast<uint8>(BasketDirection));
+		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Yellow, Msg);
+	}*/
+
 	BasketDirecitonCurrent = BasketDirection;
 
-	TryToCatchEgg();  // try to catch egg instant
+	TryToCatchEgg(false);  // try to catch egg instant
 }
