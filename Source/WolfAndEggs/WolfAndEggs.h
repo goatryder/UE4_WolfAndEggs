@@ -9,3 +9,10 @@
 
 // game start direction of wolf basket
 #define WE_DEFAULT_BASKET_DIRECTION     0
+
+
+// max lifes
+#define WE_MAX_LIFES                    6
+
+// max score
+#define WE_MAX_SCORE                    999

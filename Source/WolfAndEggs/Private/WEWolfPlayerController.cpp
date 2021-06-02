@@ -4,6 +4,9 @@
 #include "WEWolfPlayerController.h"
 #include "WEWolf.h"
 
+#include "Kismet/GameplayStatics.h"
+#include "Camera/CameraActor.h"
+
 AWEWolfPlayerController::AWEWolfPlayerController()
 {
 	OnNewPawn.AddUObject(this, &AWEWolfPlayerController::SetPlayerCharacter);
@@ -30,6 +33,23 @@ void AWEWolfPlayerController::SetPlayerCharacter(APawn* PossesedPawn)
 	if (PossesedCharacter)
 	{
 		PossesedWolfPawn = PossesedCharacter;
+
+		// set camera
+		AActor* SceneCamera = UGameplayStatics::GetActorOfClass(GetWorld(), ACameraActor::StaticClass());
+
+		if (SceneCamera)
+		{
+			SetViewTarget(SceneCamera);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("[WolfPlayerController] Can't find any camera on %s scene, please add one"), 
+				*GetWorld()->GetName());
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[WolfPlayerController] Possesed Character should be instance of WEWolf class"));
 	}
 }
 
