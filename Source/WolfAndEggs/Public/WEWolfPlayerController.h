@@ -24,6 +24,9 @@ protected:
 	void SetPlayerCharacter(class APawn* PossesedPawn);
 	class AWEWolf* PossesedWolfPawn;
 
+	/** Custom game state ref */
+	class AWEGameState* CustomGameState;
+
 	void MoveTopLeft();
 	void MoveTopRight();
 	void MoveBottomLeft();
@@ -34,4 +37,11 @@ protected:
 	void MoveBottom();
 	void MoveTop();
 
+	void GameAPressed();
+	void GameAReleased();
+	
+	void GameBPressed();
+	void GameBReleased();
+	
+	void PausePressed();
 };

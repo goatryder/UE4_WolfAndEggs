@@ -33,7 +33,7 @@ AWEGameModeA::AWEGameModeA()
 	// use our custom Game State Class
 	GameStateClass = AWEGameState::StaticClass();
 
-	// defaults
+	// defaults GameModeA
 	bEggSpawnActive = false;
 	DefaultLifeNum = WE_MAX_LIFES;
 	CurrentLifeNum = DefaultLifeNum;
@@ -76,7 +76,7 @@ void AWEGameModeA::EndMatch()
 	// Debug 
 	//if (GEngine)
 	//	GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Cyan, TEXT("[GameModeA] EndMatch"));
-	UE_LOG(LogTemp, Warning, TEXT("[GameModeA] EndMatch()"));
+	UE_LOG(LogTemp, Warning, TEXT("[%s] EndMatch()"), *StaticClass()->GetFName().ToString());
 }
 
 void AWEGameModeA::StartPlay()
@@ -88,11 +88,11 @@ void AWEGameModeA::StartPlay()
 
 	if (EggRollerManager)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("[GameMode A] On StartPlay() EggRollerManager on current map successfully finded!"));
+		UE_LOG(LogTemp, Warning, TEXT("[%s] On StartPlay() EggRollerManager on current map successfully finded!"), *StaticClass()->GetFName().ToString());
 	}
 	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("[GameMode A] Can't find EggRollerManager on current map, please add one!"));
+		UE_LOG(LogTemp, Warning, TEXT("[%s] Can't find EggRollerManager on current map, please add one!"), *StaticClass()->GetFName().ToString());
 		ensure(EggRollerManager);
 
 	}
@@ -109,6 +109,14 @@ void AWEGameModeA::StartPlay()
 
 	// spawn egg loop run
 	ActivateSpawnEggTimer(true);
+
+	// Debug
+	if (GEngine)
+	{
+		FString Msg = FString::Printf(TEXT("[%s] StartPlay"), *StaticClass()->GetFName().ToString());
+		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, Msg);
+	}
+	UE_LOG(LogTemp, Warning, TEXT("[%s] On StartPlay()"), *StaticClass()->GetFName().ToString());
 }
 
 void AWEGameModeA::OnEggOutObserver(AWEEggRoller* EggRoller, EWECornerDirection RollerPosition, bool bIsCached)
@@ -178,14 +186,14 @@ void AWEGameModeA::IncrCurrentScoreNum()
 		EggSpawnTimer.DecreaseTime(-100.0f);  // easing, increase time on half of what already decreased
 		CurrentLifeNum = DefaultLifeNum;
 
-		UE_LOG(LogTemp, Warning, TEXT("[GameModeA] On Score 199 Time Easing, Life Restore"));
+		UE_LOG(LogTemp, Warning, TEXT("[%s] On Score 199 Time Easing, Life Restore"), *StaticClass()->GetFName().ToString());
 	}
 	else if (CurrentScoreNum == 499)
 	{
 		EggSpawnTimer.DecreaseTime(-250.0f + 100.0f);  // easing, increase time on half of what already decreased
 		CurrentLifeNum = DefaultLifeNum;
 
-		UE_LOG(LogTemp, Warning, TEXT("[GameModeA] On Score 499 Time Easing, Life Restore"));
+		UE_LOG(LogTemp, Warning, TEXT("[%s] On Score 499 Time Easing, Life Restore"), *StaticClass()->GetFName().ToString());
 	}
 	else
 	{
@@ -281,8 +289,9 @@ void AWEGameModeA::SpawnEggRandPos()
 	}
 
 	FString Msg = FString::Printf(
-		TEXT("[GameModeA] SpawnRandEgg from roller: %d, unusedRoller: %d, score: %d, lifes: %d, spawnTime: %f, rollTime: %f"),
-		static_cast<uint8>(RandSpawnDirection), static_cast<uint8>(UnusedRollerDirection), CurrentScoreNum, CurrentLifeNum, EggSpawnTimer.LastTimeCache, EggRollTime
+		TEXT("[%s] SpawnRandEgg from roller: %d, unusedRoller: %d, score: %d, lifes: %d, spawnTime: %f, rollTime: %f"),
+		*StaticClass()->GetFName().ToString(), static_cast<uint8>(RandSpawnDirection), static_cast<uint8>(UnusedRollerDirection),
+		CurrentScoreNum, CurrentLifeNum, EggSpawnTimer.LastTimeCache, EggRollTime
 	);
 
 	UE_LOG(LogTemp, Warning, TEXT("%s"), *Msg);

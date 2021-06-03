@@ -24,8 +24,25 @@ protected:
 	/** Store best score for GameModeB */
 	uint32 ScoreGameBMax;
 
+	UPROPERTY(EditDefaultsOnly, Category = "WolfAndEggs")
+		FName GameAMapName;
+
+	UPROPERTY(EditDefaultsOnly, Category = "WolfAndEggs")
+		FName GameBMapName;
+
+	/** true - current game A, false - current game B */
+	bool bIsCurrentGameA;
 
 public:
+
+	void RunGameA();
+	void RunGameB();
+
+	uint32 GetMaxScoreGameA() const { return ScoreGameAMax; }
+	uint32 GetMaxScoreGameB() const { return ScoreGameBMax; }
+
+	/** true - current game A, false - current game B */
+	bool IsCurrentGameA() const { return bIsCurrentGameA; }
 
 	/** Try to override GamemodeA Max score */
 	void UpdateScoreGameAMax(uint32 Score);

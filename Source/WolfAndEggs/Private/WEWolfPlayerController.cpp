@@ -4,12 +4,18 @@
 #include "WEWolfPlayerController.h"
 #include "WEWolf.h"
 
+#include "WEGameModeA.h"
+#include "WEGameModeB.h"
+#include "WEGameState.h"
+
 #include "Kismet/GameplayStatics.h"
 #include "Camera/CameraActor.h"
 
 AWEWolfPlayerController::AWEWolfPlayerController()
 {
 	OnNewPawn.AddUObject(this, &AWEWolfPlayerController::SetPlayerCharacter);
+
+	CustomGameState = Cast<AWEGameState>(UGameplayStatics::GetGameState(GetWorld()));
 }
 
 void AWEWolfPlayerController::SetupInputComponent()
@@ -25,6 +31,12 @@ void AWEWolfPlayerController::SetupInputComponent()
 	InputComponent->BindAction("MoveLeft", IE_Pressed, this, &AWEWolfPlayerController::MoveLeft);
 	InputComponent->BindAction("MoveBottom", IE_Pressed, this, &AWEWolfPlayerController::MoveBottom);
 	InputComponent->BindAction("MoveTop", IE_Pressed, this, &AWEWolfPlayerController::MoveTop);
+
+	InputComponent->BindAction("GameA", IE_Pressed, this, &AWEWolfPlayerController::GameAPressed);
+	InputComponent->BindAction("GameA", IE_Released, this, &AWEWolfPlayerController::GameAReleased);
+	InputComponent->BindAction("GameB", IE_Pressed, this, &AWEWolfPlayerController::GameBPressed);
+	InputComponent->BindAction("GameB", IE_Released, this, &AWEWolfPlayerController::GameBReleased);
+	InputComponent->BindAction("Pause", IE_Pressed, this, &AWEWolfPlayerController::PausePressed).bExecuteWhenPaused = true;;
 }
 
 void AWEWolfPlayerController::SetPlayerCharacter(APawn* PossesedPawn)
@@ -115,4 +127,49 @@ void AWEWolfPlayerController::MoveTop()
 	{
 		PossesedWolfPawn->SetBasketPartialDirection(EWEDirection::Top);
 	}
+}
+
+void AWEWolfPlayerController::GameAPressed()
+{
+	ensure(CustomGameState);
+	
+	uint32 RecordScoreA = CustomGameState->GetMaxScoreGameA();
+
+	// todo: show score
+	if (GEngine)
+	{
+		FString Msg = FString::Printf(TEXT("[WolfPlayerController] Todo show score A: %d"), RecordScoreA);
+		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Yellow, Msg);
+	}
+}
+
+void AWEWolfPlayerController::GameAReleased()
+{
+	ensure(CustomGameState);
+	CustomGameState->RunGameA();
+}
+
+void AWEWolfPlayerController::GameBPressed()
+{
+	ensure(CustomGameState);
+	CustomGameState->RunGameB();
+}
+
+void AWEWolfPlayerController::GameBReleased()
+{
+	ensure(CustomGameState);
+
+	uint32 RecordScoreB = CustomGameState->GetMaxScoreGameB();
+
+	// todo: show score
+	if (GEngine)
+	{
+		FString Msg = FString::Printf(TEXT("[WolfPlayerController] Todo show score B: %d"), RecordScoreB);
+		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Yellow, Msg);
+	}
+}
+
+void AWEWolfPlayerController::PausePressed()
+{
+	SetPause(!IsPaused());
 }
