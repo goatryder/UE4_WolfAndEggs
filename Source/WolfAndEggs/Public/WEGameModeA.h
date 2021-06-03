@@ -74,6 +74,8 @@
 * Inital Game Speed is "SpeedMin" + "SpeedMax" * 0.5
 */
 
+static int32 DebugPrintGameModeA;
+
 /**
  * Random Timer Handle
  */

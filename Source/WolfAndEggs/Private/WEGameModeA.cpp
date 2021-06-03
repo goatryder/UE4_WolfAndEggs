@@ -13,6 +13,12 @@
 #include "WeGameState.h"
 #include "WEEggRoller.h"
 
+FAutoConsoleVariableRef CVARD_DebugGameModeA(
+	TEXT("WE.DebugGameModeA"),
+	DebugPrintGameModeA,
+	TEXT("Allow Debug Prints in WEGameModeA"),
+	ECVF_Cheat);
+
 AWEGameModeA::AWEGameModeA()
 {
 	// PrimaryActorTick.bCanEverTick = true;
@@ -74,8 +80,9 @@ void AWEGameModeA::EndMatch()
 	Super::EndMatch();
 	
 	// Debug 
-	//if (GEngine)
-	//	GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Cyan, TEXT("[GameModeA] EndMatch"));
+	if (DebugPrintGameModeA && GEngine)
+		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Cyan, TEXT("[GameModeA] EndMatch"));
+	
 	UE_LOG(LogTemp, Warning, TEXT("[%s] EndMatch()"), *StaticClass()->GetFName().ToString());
 }
 
@@ -111,7 +118,7 @@ void AWEGameModeA::StartPlay()
 	ActivateSpawnEggTimer(true);
 
 	// Debug
-	if (GEngine)
+	if (DebugPrintGameModeA && GEngine)
 	{
 		FString Msg = FString::Printf(TEXT("[%s] StartPlay"), *StaticClass()->GetFName().ToString());
 		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, Msg);
@@ -165,7 +172,7 @@ void AWEGameModeA::DecrCurrentLifeNum()
 	}
 
 	// Debug
-	//if (GEngine)
+	//if (DebugPrintGameModeA && GEngine)
 	//	GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, *FString::Printf(TEXT("[GameModeA] Egg fall Lifes Num: %d"), CurrentLifeNum));
 
 	// check loose condition
@@ -297,7 +304,7 @@ void AWEGameModeA::SpawnEggRandPos()
 	UE_LOG(LogTemp, Warning, TEXT("%s"), *Msg);
 
 	// Debug
-	if (GEngine)
+	if (DebugPrintGameModeA && GEngine)
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 4.0f, FColor::Green, Msg);
 	}
