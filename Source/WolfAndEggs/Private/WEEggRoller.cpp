@@ -44,7 +44,7 @@ AWEEggRoller::AWEEggRoller()
 	// defaults
 	PushEggTime = 1.0f;
 	bActivateOnSpawn = true;
-	bShouldAddEggOnSpawn = true;
+	bShouldAddEggOnSpawn = false;
 	EggRollerPosition = EWECornerDirection::TopLeft;
 }
 
@@ -63,8 +63,13 @@ void AWEEggRoller::BeginPlay()
 
 	if (bActivateOnSpawn)
 	{
-		AddEgg();
+		
 		Activate(true);
+	}
+
+	if (bShouldAddEggOnSpawn)
+	{
+		AddEgg();
 	}
 }
 
@@ -144,12 +149,15 @@ void AWEEggRoller::TryToCatchEgg(bool bAllowEggDrop)
 			NotifyOnEggOut.Broadcast(this, EggRollerPosition, true);
 
 			// Debug
-			if (GEngine)
+			FString Msg = FString::Printf(TEXT("[EggRoller] Egg catched! roller id: %d"),
+				static_cast<uint8>(EggRollerPosition));
+
+			/*if (GEngine)
 			{
-				FString Msg = FString::Printf(TEXT("[EggRoller] Egg catched! roller id: %d"), 
-					static_cast<uint8>(EggRollerPosition));
 				GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, Msg);
-			}
+			}*/
+
+			UE_LOG(LogTemp, Warning, TEXT("%s"), *Msg);
 		}
 		else                                                            // let egg fall if allowed
 		{
@@ -158,12 +166,15 @@ void AWEEggRoller::TryToCatchEgg(bool bAllowEggDrop)
 				NotifyOnEggOut.Broadcast(this, EggRollerPosition, false);
 
 				// Debug
-				if (GEngine)
+				FString Msg = FString::Printf(TEXT("[EggRoller] Egg falls! roller id: %d"),
+					static_cast<uint8>(EggRollerPosition));
+
+				/*if (GEngine)
 				{
-					FString Msg = FString::Printf(TEXT("[EggRoller] Egg falls! roller id: %d"),
-						static_cast<uint8>(EggRollerPosition));
 					GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, Msg);
-				}
+				}*/
+
+				UE_LOG(LogTemp, Warning, TEXT("%s"), *Msg);
 			}
 		}
 

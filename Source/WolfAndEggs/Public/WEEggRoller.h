@@ -13,7 +13,11 @@ UCLASS()
 class WOLFANDEGGS_API AWEEggRoller : public AActor
 {
 	GENERATED_BODY()
-	
+
+private:
+
+	friend class AWEEggRollerManager;
+
 public:	
 	// Sets default values for this actor's properties
 	AWEEggRoller();
@@ -31,20 +35,16 @@ public:
 		EWECornerDirection EggRollerPosition;
 	
 	/** Should Egg roller be activated on spawn? */
-	UPROPERTY(EditDefaultsOnly, Category = "EggRoller")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "EggRoller")
 		bool bActivateOnSpawn;
 
 	/** Should Egg roller spawn egg on spawn activation? */
-	UPROPERTY(EditDefaultsOnly, Category = "EggRoller")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "EggRoller")
 		bool bShouldAddEggOnSpawn;
 
 	/** Activate Egg Roller */
 	UFUNCTION(BlueprintCallable, Category = "EggRoller")
 		void Activate(bool bActivate);
-
-	/** Change Push Egg Time. If Immediately is True, then current active timer will be reset */
-	UFUNCTION(BlueprintCallable, Category = "EggRoller")
-		void SetPushEggTime(float NewTime, bool bImmediately);
 
 	/** Spawn New Egg to Roll, If egg is spawned when first pos is locked, then all positions will be shifted */
 	UFUNCTION(BlueprintCallable, Category = "EggRoller")
@@ -76,6 +76,10 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category = "EggRoller")
 		float PushEggTime;
+
+	/** Change Push Egg Time. If Immediately is True, then current active timer will be reset */
+	UFUNCTION(BlueprintCallable, Category = "EggRoller")
+		void SetPushEggTime(float NewTime, bool bImmediately);
 
 	FTimerHandle TimerHandle_EggPush;
 

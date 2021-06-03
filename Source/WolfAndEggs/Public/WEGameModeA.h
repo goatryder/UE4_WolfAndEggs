@@ -74,6 +74,57 @@
 * Inital Game Speed is "SpeedMin" + "SpeedMax" * 0.5
 */
 
+/**
+ * Random Timer Handle
+ */
+USTRUCT(BlueprintType)
+struct FWEGameRandTimer
+{
+	GENERATED_BODY()
+
+	FWEGameRandTimer() {}
+	FWEGameRandTimer(float RandTimeClampMin, float RandTimeClampMax, float TimeRandMin, float TimeRandMax, float RandTimeDecrementFracture) 
+		: RandTimeClampMin(RandTimeClampMin), RandTimeClampMax(RandTimeClampMax), TimeRandMin(TimeRandMin), TimeRandMax(TimeRandMax), RandTimeDecrementFracture(RandTimeDecrementFracture)
+	{}
+
+	virtual ~FWEGameRandTimer() {}
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "GameRandTimer")
+		float RandTimeClampMin;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "GameRandTimer")
+		float RandTimeClampMax;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "GameRandTimer")
+		float TimeRandMin;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "GameRandTimer")
+		float TimeRandMax;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "GameRandTimer")
+		float RandTimeDecrementFracture;
+
+	float LastTimeCache;
+
+	void DecreaseTime(float Mult)
+	{
+		float DecreseVal = RandTimeDecrementFracture * Mult;
+
+		TimeRandMin -= DecreseVal;
+		TimeRandMin = FMath::Clamp(TimeRandMin, RandTimeClampMin, RandTimeClampMax);
+
+		TimeRandMax -= DecreseVal;
+		TimeRandMax = FMath::Clamp(TimeRandMax, RandTimeClampMin, RandTimeClampMax);
+	}
+
+	float GetRandTime()
+	{
+		LastTimeCache = FMath::RandRange(TimeRandMin, TimeRandMax);
+		return LastTimeCache;
+	}
+	
+};
+
 UCLASS()
 class WOLFANDEGGS_API AWEGameModeA : public AGameMode
 {
@@ -119,34 +170,39 @@ protected:
 	/** If Rabbit Is Active then on egg crack we loose 1 hp, if he not active we will loose 2 hp */
 	bool bRabbitIsActive;
 
-	/** Change Egg Spawn Time. Called after each Score Increment */
-	void DecrementSpawnTime();
-
-	/** Limit SpawnTimeMin */
-	UPROPERTY(EditDefaultsOnly, Category = "GameModeA: Egg Spawn")
-		float SpawnTimeLimitMin;
-
-	/** Limit SpawnTimeMax */
-	UPROPERTY(EditDefaultsOnly, Category = "GameModeA: Egg Spawn")
-		float SpawnTimeLimitMax;
-
-	/** Will be spawn egg on random position in rand range [SpawnTimeMin SpawnTimeMax] */
-	UPROPERTY(EditDefaultsOnly, Category = "GameModeA: Egg Spawn")
-		float SpawnTimeMin;
-
-	/** Will be spawn egg on random position in rand range [SpawnTimeMin SpawnTimeMax] */
-	UPROPERTY(EditDefaultsOnly, Category = "GameModeA: Egg Spawn")
-		float SpawnTimeMax;
-
-	/** Value On Which we Decrement SpawnTimeMin and SpawnTimeMax on each egg collected */
-	UPROPERTY(EditDefaultsOnly, Category = "GameModeA: Egg Spawn")
-		float SpawnTimeDecrement;
+	/** Handle Random Egg spawn time */
+	UPROPERTY(EditDefaultsOnly, Category = "GameModeA")
+		FWEGameRandTimer EggSpawnTimer;
 
 	FTimerHandle TimerHandle_SpawnEgg;
 
-	/** Handle Egg spawn */
+	/** Start Timer to spawn new egg */
+	void ActivateSpawnEggTimer(bool bActivate);
+
+	bool bEggSpawnActive;
+
+	/** Actual function for Egg spawn on timer*/
 	UFUNCTION()
-		void SpawnEggRand();
+		void SpawnEggRandPos();
+
+	/** Clamp egg roll time min */
+	UPROPERTY(EditDefaultsOnly, Category = "GameModeA")
+		float EggRollTimeClampMin;
+
+	/** Clamp egg roll time max */
+	UPROPERTY(EditDefaultsOnly, Category = "GameModeA")
+		float EggRollTimeClampMax;
+
+	/** Initial egg roll time */
+	UPROPERTY(EditDefaultsOnly, Category = "GameModeA")
+		float EggRollTime;
+
+	/** On what amount Egg Roller shift egg time will decrease on each egg collected */
+	UPROPERTY(EditDefaultsOnly, Category = "GameModeA")
+		float EggRollTimeDecrementFracture;
+
+	/** Decrement Egg Roll shift egg time after each egg collected (when score incremented) */
+	void UpdateEggRollTime();
 
 public:
 	

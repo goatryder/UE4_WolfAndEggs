@@ -94,17 +94,25 @@ void AWEEggRollerManager::SpawnEgg(EWECornerDirection CornerDirection)
 	{
 		EggRoller->AddEgg();
 
-		// Debug
+		/*// Debug
 		if (GEngine)
 		{
 			FString Msg = FString::Printf(TEXT("[EggRollerManager] EggSpawned for '%d' Egg Roller"), 
 				static_cast<uint8>(EggRoller->EggRollerPosition));
 			GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Orange, Msg);
-		}
+		}*/
 	}
 	else
 	{
 		UE_LOG(LogTemp, Warning, TEXT("[EggRollermanager] %s can't spawn egg, egg roller with direction %d is null"),
 			*GetName(), static_cast<uint8>(CornerDirection));
+	}
+}
+
+void AWEEggRollerManager::SetEggRollersShiftTime(float Time)
+{
+	for (auto& EggRoller : EggRollers.EggRollers)
+	{
+		EggRoller.Value->SetPushEggTime(Time, false);
 	}
 }

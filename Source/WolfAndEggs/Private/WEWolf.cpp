@@ -37,14 +37,14 @@ AWEWolf::AWEWolf()
 
 	// default basket direction
 	BasketDirection = EWECornerDirection::BottomRight;
-	SetBasketDirection(static_cast<EWECornerDirection>(WE_DEFAULT_BASKET_DIRECTION));
 }
 
 // Called when the game starts or when spawned
 void AWEWolf::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
+	SetBasketDirection(static_cast<EWECornerDirection>(WE_DEFAULT_BASKET_DIRECTION));
 }
 
 // Called to bind functionality to input

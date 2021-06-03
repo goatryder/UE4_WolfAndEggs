@@ -52,8 +52,12 @@ public:
 	/** Spawn egg for chosen EggRoller */
 	void SpawnEgg(EWECornerDirection CornerDirection);
 
+	void SetEggRollersShiftTime(float Time);
+
 	/** Get Level Egg Rollers references. */
 	void ActivateManager();
+
+	FCornerEggRollers EggRollers;
 
 protected:
 
@@ -61,6 +65,4 @@ protected:
 
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-
-	FCornerEggRollers EggRollers;
 };

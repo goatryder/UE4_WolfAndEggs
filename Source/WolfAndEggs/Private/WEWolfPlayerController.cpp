@@ -57,7 +57,6 @@ void AWEWolfPlayerController::MoveTopLeft()
 {
 	if (PossesedWolfPawn)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("MoveTopLeft"));
 		PossesedWolfPawn->SetBasketDirection(EWECornerDirection::TopLeft);
 	}
 }
@@ -66,7 +65,6 @@ void AWEWolfPlayerController::MoveTopRight()
 {
 	if (PossesedWolfPawn)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("MoveTopRight"));
 		PossesedWolfPawn->SetBasketDirection(EWECornerDirection::TopRight);
 	}
 }
@@ -75,7 +73,6 @@ void AWEWolfPlayerController::MoveBottomLeft()
 {
 	if (PossesedWolfPawn)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("MoveBottomLeft"));
 		PossesedWolfPawn->SetBasketDirection(EWECornerDirection::BottomLeft);
 	}
 }
@@ -84,7 +81,6 @@ void AWEWolfPlayerController::MoveBottomRight()
 {
 	if (PossesedWolfPawn)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("MoveBottomRight"));
 		PossesedWolfPawn->SetBasketDirection(EWECornerDirection::BottomRight);
 	}
 }
@@ -93,7 +89,6 @@ void AWEWolfPlayerController::MoveRight()
 {
 	if (PossesedWolfPawn)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("MoveRight"));
 		PossesedWolfPawn->SetBasketPartialDirection(EWEDirection::Right);
 	}
 }
@@ -102,7 +97,6 @@ void AWEWolfPlayerController::MoveLeft()
 {
 	if (PossesedWolfPawn)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("MoveLEft"));
 		PossesedWolfPawn->SetBasketPartialDirection(EWEDirection::Left);
 	}
 }
@@ -111,7 +105,6 @@ void AWEWolfPlayerController::MoveBottom()
 {
 	if (PossesedWolfPawn)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("MoveBottom"));
 		PossesedWolfPawn->SetBasketPartialDirection(EWEDirection::Bottom);
 	}
 }
@@ -120,7 +113,6 @@ void AWEWolfPlayerController::MoveTop()
 {
 	if (PossesedWolfPawn)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("MoveTop"));
 		PossesedWolfPawn->SetBasketPartialDirection(EWEDirection::Top);
 	}
 }

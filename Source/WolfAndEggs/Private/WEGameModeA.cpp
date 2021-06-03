@@ -13,7 +13,6 @@
 #include "WeGameState.h"
 #include "WEEggRoller.h"
 
-
 AWEGameModeA::AWEGameModeA()
 {
 	// PrimaryActorTick.bCanEverTick = true;
@@ -35,10 +34,16 @@ AWEGameModeA::AWEGameModeA()
 	GameStateClass = AWEGameState::StaticClass();
 
 	// defaults
+	bEggSpawnActive = false;
 	DefaultLifeNum = WE_MAX_LIFES;
 	CurrentLifeNum = DefaultLifeNum;
 	CurrentScoreNum = 0;
 	bRabbitIsActive = false;
+	EggSpawnTimer = FWEGameRandTimer(0.33f, 3.0f, 2.0f, 3.0f, 0.05f);
+	EggRollTimeClampMin = 0.33f;
+	EggRollTimeClampMax = 2.0f;
+	EggRollTime = 2.0f;
+	EggRollTimeDecrementFracture = 0.05f;
 }
 
 void AWEGameModeA::BeginPlay()
@@ -67,12 +72,16 @@ void AWEGameModeA::BeginDestroy()
 void AWEGameModeA::EndMatch()
 {
 	Super::EndMatch();
+	
+	// Debug 
+	//if (GEngine)
+	//	GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Cyan, TEXT("[GameModeA] EndMatch"));
+	UE_LOG(LogTemp, Warning, TEXT("[GameModeA] EndMatch()"));
 }
 
 void AWEGameModeA::StartPlay()
 {
 	Super::StartPlay();
-
 
 	// try to get EggRollerManager from game scene
 	EggRollerManager = Cast<AWEEggRollerManager>(UGameplayStatics::GetActorOfClass(GetWorld(), AWEEggRollerManager::StaticClass()));
@@ -93,10 +102,13 @@ void AWEGameModeA::StartPlay()
 
 	// reset score
 	CurrentScoreNum = 0;
-}
 
-void AWEGameModeA::SpawnEggRand()
-{
+	// set egg roll time
+	EggRollTime = FMath::Clamp(EggRollTime, EggRollTimeClampMin, EggRollTimeClampMax);
+	EggRollerManager->SetEggRollersShiftTime(EggRollTime);
+
+	// spawn egg loop run
+	ActivateSpawnEggTimer(true);
 }
 
 void AWEGameModeA::OnEggOutObserver(AWEEggRoller* EggRoller, EWECornerDirection RollerPosition, bool bIsCached)
@@ -113,6 +125,11 @@ void AWEGameModeA::OnEggOutObserver(AWEEggRoller* EggRoller, EWECornerDirection 
 
 void AWEGameModeA::DecrCurrentLifeNum()
 {
+	if (CurrentLifeNum == 0)
+	{
+		return;
+	}
+
 	uint32 NewLifeNum = CurrentLifeNum;
 
 	// calc rabbit active factor
@@ -139,6 +156,10 @@ void AWEGameModeA::DecrCurrentLifeNum()
 		CurrentLifeNum = NewLifeNum;
 	}
 
+	// Debug
+	//if (GEngine)
+	//	GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, *FString::Printf(TEXT("[GameModeA] Egg fall Lifes Num: %d"), CurrentLifeNum));
+
 	// check loose condition
 	CheckLoose();
 }
@@ -152,13 +173,123 @@ void AWEGameModeA::IncrCurrentScoreNum()
 	CustomGameState->UpdateScoreGameAMax(NewScore);
 	
 	// Handle New Egg Spawn Time
-	DecrementSpawnTime();
+	if (CurrentScoreNum == 199)
+	{
+		EggSpawnTimer.DecreaseTime(-100.0f);  // easing, increase time on half of what already decreased
+		CurrentLifeNum = DefaultLifeNum;
+
+		UE_LOG(LogTemp, Warning, TEXT("[GameModeA] On Score 199 Time Easing, Life Restore"));
+	}
+	else if (CurrentScoreNum == 499)
+	{
+		EggSpawnTimer.DecreaseTime(-250.0f + 100.0f);  // easing, increase time on half of what already decreased
+		CurrentLifeNum = DefaultLifeNum;
+
+		UE_LOG(LogTemp, Warning, TEXT("[GameModeA] On Score 499 Time Easing, Life Restore"));
+	}
+	else
+	{
+		EggSpawnTimer.DecreaseTime(1.0);
+	}
+	
+	// update egg rollers shift time
+	UpdateEggRollTime();
 
 	// if score > then max score, use modulo div
 	CurrentScoreNum = NewScore % (WE_MAX_SCORE + 1);
 }
 
-void AWEGameModeA::DecrementSpawnTime()
+void AWEGameModeA::UpdateEggRollTime()
 {
-	// todo
+	ensure(EggRollerManager);
+
+	EggRollTime = FMath::Clamp(EggRollTime, EggRollTimeClampMin, EggRollTimeClampMax);
+
+	EggRollerManager->SetEggRollersShiftTime(EggRollTime);
+
+	EggRollTime -= EggRollTimeDecrementFracture;
+}
+
+void AWEGameModeA::ActivateSpawnEggTimer(bool bActivate)
+{
+	if (bActivate)
+	{
+		GetWorldTimerManager().ClearTimer(TimerHandle_SpawnEgg);
+		GetWorldTimerManager().SetTimer(TimerHandle_SpawnEgg, this,
+			&AWEGameModeA::SpawnEggRandPos, EggSpawnTimer.GetRandTime(), false);
+	}
+	else
+	{
+		TimerHandle_SpawnEgg.Invalidate();
+	}
+
+	bEggSpawnActive = bActivate;
+}
+
+void AWEGameModeA::SpawnEggRandPos()
+{
+	ensure(EggRollerManager);
+
+	EWECornerDirection UnusedRollerDirection = EWECornerDirection::TopLeft;
+
+	// GameA has one unused roller, which is changing depending on Current Life value
+	switch (CurrentLifeNum)
+	{
+	case 1:
+		UnusedRollerDirection = EWECornerDirection::TopRight;
+		break;
+	
+	case 2:
+	case 3:
+		UnusedRollerDirection = EWECornerDirection::TopLeft;
+		break;
+	
+	case 4:
+	case 5:
+		UnusedRollerDirection = EWECornerDirection::BottomRight;
+		break;
+	
+	case 6:
+		UnusedRollerDirection = EWECornerDirection::BottomLeft;
+		break;
+
+	default:
+		break;
+	}
+
+	// select random spawn
+	TArray<EWECornerDirection> EggRollersDirectionsPickFrom;
+
+	for (auto& EggRollerPair : EggRollerManager->EggRollers.EggRollers)
+	{
+		if (EggRollerPair.Value && EggRollerPair.Key != UnusedRollerDirection)
+		{
+			EggRollersDirectionsPickFrom.Add(EggRollerPair.Key);
+		}
+	}
+	
+	uint32 RandIndex = FMath::Rand() % EggRollersDirectionsPickFrom.Num();
+	EWECornerDirection RandSpawnDirection = EggRollersDirectionsPickFrom[RandIndex];
+
+	// spawn egg
+	EggRollerManager->SpawnEgg(RandSpawnDirection);
+
+	// continue egg spawn loop
+	if (bEggSpawnActive)
+	{
+		ActivateSpawnEggTimer(true);
+	}
+
+	FString Msg = FString::Printf(
+		TEXT("[GameModeA] SpawnRandEgg from roller: %d, unusedRoller: %d, score: %d, lifes: %d, spawnTime: %f, rollTime: %f"),
+		static_cast<uint8>(RandSpawnDirection), static_cast<uint8>(UnusedRollerDirection), CurrentScoreNum, CurrentLifeNum, EggSpawnTimer.LastTimeCache, EggRollTime
+	);
+
+	UE_LOG(LogTemp, Warning, TEXT("%s"), *Msg);
+
+	// Debug
+	if (GEngine)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 4.0f, FColor::Green, Msg);
+	}
 }
