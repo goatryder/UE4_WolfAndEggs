@@ -12,6 +12,9 @@
 #include "../WolfAndEggs.h"
 #include "WeGameState.h"
 #include "WEEggRoller.h"
+#include "WEScoreDisplay.h"
+#include "WELifesDisplay.h"
+#include "WEGameModeB.h"
 
 FAutoConsoleVariableRef CVARD_DebugGameModeA(
 	TEXT("WE.DebugGameModeA"),
@@ -84,6 +87,9 @@ void AWEGameModeA::EndMatch()
 		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Cyan, TEXT("[GameModeA] EndMatch"));
 	
 	UE_LOG(LogTemp, Warning, TEXT("[%s] EndMatch()"), *StaticClass()->GetFName().ToString());
+
+	AWEGameState* GS = Cast<AWEGameState>(UGameplayStatics::GetGameState(GetWorld()));
+	GS->RunGameA();
 }
 
 void AWEGameModeA::StartPlay()
@@ -104,6 +110,28 @@ void AWEGameModeA::StartPlay()
 
 	}
 
+	// try to get Score Display from game scene
+	ScoreDisplay = Cast<AWEScoreDisplay>(UGameplayStatics::GetActorOfClass(GetWorld(), AWEScoreDisplay::StaticClass()));
+	if (ScoreDisplay)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[%s] On StartPlay() ScoreDisplay on current map successfully finded!"), *StaticClass()->GetFName().ToString());
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[%s] On StartPlay() can't find ScoreDisplay on current map! Please, add."), *StaticClass()->GetFName().ToString());
+	}
+
+	// try to get Lifes Display from game scene
+	LifesDisplay = Cast<AWELifesDisplay>(UGameplayStatics::GetActorOfClass(GetWorld(), AWELifesDisplay::StaticClass()));
+	if (ScoreDisplay)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[%s] On StartPlay() LifesDisplay on current map successfully finded!"), *StaticClass()->GetFName().ToString());
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[%s] On StartPlay() can't find LifesDisplay on current map! Please, add."), *StaticClass()->GetFName().ToString());
+	}
+
 	// reset lifes
 	CurrentLifeNum = DefaultLifeNum;
 
@@ -116,6 +144,18 @@ void AWEGameModeA::StartPlay()
 
 	// spawn egg loop run
 	ActivateSpawnEggTimer(true);
+
+	// reset score
+	if (ScoreDisplay)
+	{
+		ScoreDisplay->SetScore(0);
+	}
+
+	// reset lifes
+	if (LifesDisplay)
+	{
+		LifesDisplay->SetCurrentLife(WE_MAX_LIFES);
+	}
 
 	// Debug
 	if (DebugPrintGameModeA && GEngine)
@@ -171,6 +211,12 @@ void AWEGameModeA::DecrCurrentLifeNum()
 		CurrentLifeNum = NewLifeNum;
 	}
 
+	// Update life display
+	if (LifesDisplay)
+	{
+		LifesDisplay->SetCurrentLife(CurrentLifeNum);
+	}
+
 	// Debug
 	//if (DebugPrintGameModeA && GEngine)
 	//	GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, *FString::Printf(TEXT("[GameModeA] Egg fall Lifes Num: %d"), CurrentLifeNum));
@@ -185,7 +231,15 @@ void AWEGameModeA::IncrCurrentScoreNum()
 
 	// try to override total record:
 	ensure(CustomGameState);
-	CustomGameState->UpdateScoreGameAMax(NewScore);
+
+	if (Cast<AWEGameModeB>(this))
+	{
+		CustomGameState->UpdateScoreGameBMax(CurrentScoreNum);
+	}
+	else
+	{
+		CustomGameState->UpdateScoreGameAMax(CurrentScoreNum);
+	}
 	
 	// Handle New Egg Spawn Time
 	if (CurrentScoreNum == 199)
@@ -212,6 +266,12 @@ void AWEGameModeA::IncrCurrentScoreNum()
 
 	// if score > then max score, use modulo div
 	CurrentScoreNum = NewScore % (WE_MAX_SCORE + 1);
+
+	// update display num
+	if (ScoreDisplay)
+	{
+		ScoreDisplay->SetScore(CurrentScoreNum);
+	}
 }
 
 void AWEGameModeA::UpdateEggRollTime()
@@ -231,7 +291,7 @@ void AWEGameModeA::ActivateSpawnEggTimer(bool bActivate)
 	{
 		GetWorldTimerManager().ClearTimer(TimerHandle_SpawnEgg);
 		GetWorldTimerManager().SetTimer(TimerHandle_SpawnEgg, this,
-			&AWEGameModeA::SpawnEggRandPos, EggSpawnTimer.GetRandTime(), false);
+			&AWEGameModeA::SpawnEgg_OnTimer, EggSpawnTimer.GetRandTime(), false);
 	}
 	else
 	{
@@ -239,6 +299,11 @@ void AWEGameModeA::ActivateSpawnEggTimer(bool bActivate)
 	}
 
 	bEggSpawnActive = bActivate;
+}
+
+void AWEGameModeA::SpawnEgg_OnTimer()
+{
+	SpawnEggRandPos();
 }
 
 void AWEGameModeA::SpawnEggRandPos()
@@ -253,17 +318,17 @@ void AWEGameModeA::SpawnEggRandPos()
 	case 1:
 		UnusedRollerDirection = EWECornerDirection::TopRight;
 		break;
-	
+
 	case 2:
 	case 3:
 		UnusedRollerDirection = EWECornerDirection::TopLeft;
 		break;
-	
+
 	case 4:
 	case 5:
 		UnusedRollerDirection = EWECornerDirection::BottomRight;
 		break;
-	
+
 	case 6:
 		UnusedRollerDirection = EWECornerDirection::BottomLeft;
 		break;
@@ -282,7 +347,7 @@ void AWEGameModeA::SpawnEggRandPos()
 			EggRollersDirectionsPickFrom.Add(EggRollerPair.Key);
 		}
 	}
-	
+
 	uint32 RandIndex = FMath::Rand() % EggRollersDirectionsPickFrom.Num();
 	EWECornerDirection RandSpawnDirection = EggRollersDirectionsPickFrom[RandIndex];
 

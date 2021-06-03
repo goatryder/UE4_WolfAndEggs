@@ -7,6 +7,7 @@
 #include "WEGameModeA.h"
 #include "WEGameModeB.h"
 #include "WEGameState.h"
+#include "WEScoreDisplay.h"
 
 #include "Kismet/GameplayStatics.h"
 #include "Camera/CameraActor.h"
@@ -135,7 +136,15 @@ void AWEWolfPlayerController::GameAPressed()
 	
 	uint32 RecordScoreA = CustomGameState->GetMaxScoreGameA();
 
-	// todo: show score
+	// show display score
+	if (AWEGameModeA* GM = Cast<AWEGameModeA>(UGameplayStatics::GetGameMode(GetWorld())))
+	{
+		if (AWEScoreDisplay* ScoreDisplay = GM->GetScoreDisplay())
+		{
+			ScoreDisplay->SetScore(RecordScoreA);
+		}
+	}
+
 	if (GEngine)
 	{
 		FString Msg = FString::Printf(TEXT("[WolfPlayerController] Todo show score A: %d"), RecordScoreA);
@@ -152,21 +161,29 @@ void AWEWolfPlayerController::GameAReleased()
 void AWEWolfPlayerController::GameBPressed()
 {
 	ensure(CustomGameState);
-	CustomGameState->RunGameB();
-}
-
-void AWEWolfPlayerController::GameBReleased()
-{
-	ensure(CustomGameState);
 
 	uint32 RecordScoreB = CustomGameState->GetMaxScoreGameB();
 
-	// todo: show score
+	// show display score
+	if (AWEGameModeA* GM = Cast<AWEGameModeA>(UGameplayStatics::GetGameMode(GetWorld())))
+	{
+		if (AWEScoreDisplay* ScoreDisplay = GM->GetScoreDisplay())
+		{
+			ScoreDisplay->SetScore(RecordScoreB);
+		}
+	}
+
 	if (GEngine)
 	{
 		FString Msg = FString::Printf(TEXT("[WolfPlayerController] Todo show score B: %d"), RecordScoreB);
 		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Yellow, Msg);
 	}
+}
+
+void AWEWolfPlayerController::GameBReleased()
+{
+	ensure(CustomGameState);
+	CustomGameState->RunGameB();
 }
 
 void AWEWolfPlayerController::PausePressed()

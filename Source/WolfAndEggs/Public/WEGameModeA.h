@@ -185,7 +185,9 @@ protected:
 
 	/** Actual function for Egg spawn on timer*/
 	UFUNCTION()
-		void SpawnEggRandPos();
+		void SpawnEgg_OnTimer();
+
+	virtual void SpawnEggRandPos();
 
 	/** Clamp egg roll time min */
 	UPROPERTY(EditDefaultsOnly, Category = "GameModeA")
@@ -206,8 +208,16 @@ protected:
 	/** Decrement Egg Roll shift egg time after each egg collected (when score incremented) */
 	void UpdateEggRollTime();
 
+	/** Score Display ref */
+	class AWEScoreDisplay* ScoreDisplay;
+
+	/** Life Display ref */
+	class AWELifesDisplay* LifesDisplay;
+
 public:
 	
+	class AWEScoreDisplay* GetScoreDisplay() { return ScoreDisplay; }
+
 	/** Observer on AWEEggRoller NotifyOnEggOut */
 	UFUNCTION()
 		void OnEggOutObserver(class AWEEggRoller* EggRoller, EWECornerDirection RollerPosition, bool bIsCached);

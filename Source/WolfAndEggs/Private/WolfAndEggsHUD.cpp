@@ -2,7 +2,7 @@
 
 
 #include "WolfAndEggsHUD.h"
-#include "Engine/Texture2D.h"
+//#include "Engine/Texture2D.h"
 
 // DISABLED, HUD INTEGRATED IN GAME SCENE AS SEPARATE ACTORS
 

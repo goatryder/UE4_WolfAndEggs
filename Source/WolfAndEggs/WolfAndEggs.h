@@ -17,3 +17,4 @@
 // max score
 #define WE_MAX_SCORE                    999
 
+#define WE_MAX_SCORE_DISPLAY_DIGITS     3

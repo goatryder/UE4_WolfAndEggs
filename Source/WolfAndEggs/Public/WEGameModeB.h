@@ -14,4 +14,11 @@ class WOLFANDEGGS_API AWEGameModeB : public AWEGameModeA
 {
 	GENERATED_BODY()
 	
+public:
+
+	virtual void EndMatch() override;
+
+protected:
+
+	virtual void SpawnEggRandPos() override;
 };

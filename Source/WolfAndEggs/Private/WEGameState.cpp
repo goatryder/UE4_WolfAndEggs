@@ -5,12 +5,12 @@
 #include "../WolfAndEggs.h"
 #include "Kismet/GameplayStatics.h"
 
+uint32 AWEGameState::ScoreGameAMax = 0;
+uint32 AWEGameState::ScoreGameBMax = 0;
+
 AWEGameState::AWEGameState()
 {
 	// defaults
-	ScoreGameAMax = 0;
-	ScoreGameBMax = 0;
-
 	GameAMapName = FName("MapGameA");
 	GameBMapName = FName("MapGameB");
 	
@@ -57,4 +57,5 @@ void AWEGameState::UpdateScoreGameBMax(uint32 Score)
 			ScoreGameBMax = Score;
 		}
 	}
+
 }

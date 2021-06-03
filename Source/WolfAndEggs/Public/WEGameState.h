@@ -19,10 +19,10 @@ class WOLFANDEGGS_API AWEGameState : public AGameState
 protected:
 
 	/** Store best score for GameModeA */
-	uint32 ScoreGameAMax;
+	static uint32 ScoreGameAMax;
 
 	/** Store best score for GameModeB */
-	uint32 ScoreGameBMax;
+	static uint32 ScoreGameBMax;
 
 	UPROPERTY(EditDefaultsOnly, Category = "WolfAndEggs")
 		FName GameAMapName;
